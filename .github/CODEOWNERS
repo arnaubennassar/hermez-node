@@ -4,6 +4,22 @@ db/*.go                 @arnaubennassar
 db/historydb            @arnaubennassar
 db/migrations           @arnaubennassar
 db/l2db                 @arnaubennassar
-txselector/             @arnaubennassar
+db/kvdb                 @Mikelle
+db/statedb              @Mikelle
+txselector/             @arnaubennassar @tclemos
 etherscan/              @ARR552
 priceupdater/           @ARR552
+common/                 @Mikelle
+config/                 @Mikelle
+coordinator/            @tclemos
+node/                   @Mikelle @ARR552
+eth/                    @ARR552
+cmd/                    @mfcastellani
+txprocessor/            @arnaubennassar
+health/checkers         @Mikelle
+log/                    @mfcastellani
+metric/                 @mfcastellani
+test/                   @arnaubennassar
+prover/                 @ARR552
+synchronizer/           @mfcastellani
+batchbuilder/           @ARR552
