@@ -195,7 +195,7 @@ folder.
 - [ ] Clone Hermez Node project and do a `make` command into project folder.
 
     ```command
-    git clone git@github.com:hermeznetwork/hermez-node.git $GOPATH/src/github.com/hermeznetwork/hermez-node
+    git clone git@github.com:hermeznetwork/hermez-node.git $GOPATH/src/github.com/arnaubennassar/hermez-node
     cd hermez-node
     make
     ```
@@ -204,7 +204,7 @@ folder.
 folder.
 
     ```command
-    export PATH=$PATH:$GOPATH/src/github.com/hermeznetwork/hermez-node/dist
+    export PATH=$PATH:$GOPATH/src/github.com/arnaubennassar/hermez-node/dist
     ```
 
 - [ ] Copy the config file from `cmd/heznode/cfg.builder.toml` to
@@ -244,5 +244,5 @@ folder.
 - [ ] Run the hermez-node as sync mode
 
     ```command
-    nohup heznode run --mode sync --cfg /home/youruser/go/src/github.com/hermeznetwork/hermez-node/localconfig/cfg.buidler.toml > ~/temp/logs/hermez-node.log 2>&1 &
+    nohup heznode run --mode sync --cfg /home/youruser/go/src/github.com/arnaubennassar/hermez-node/localconfig/cfg.buidler.toml > ~/temp/logs/hermez-node.log 2>&1 &
     ```

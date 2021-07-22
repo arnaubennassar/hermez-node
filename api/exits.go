@@ -3,20 +3,16 @@ package api
 import (
 	"net/http"
 
+	"github.com/arnaubennassar/hermez-node/api/parsers"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/api/parsers"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
 )
 
 func (a *API) getExits(c *gin.Context) {
 	// Get query parameters
 	exitsFilters, err := parsers.ParseExitsFilters(c, a.validate)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(err, c)
 		return
 	}
 
@@ -42,11 +38,7 @@ func (a *API) getExit(c *gin.Context) {
 	// Get batchNum and accountIndex
 	batchNum, idx, err := parsers.ParseExitFilter(c)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(err, c)
 		return
 	}
 	// Fetch tx from historyDB

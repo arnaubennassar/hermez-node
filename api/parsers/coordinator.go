@@ -1,9 +1,9 @@
 package parsers
 
 import (
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
 	"github.com/hermeznetwork/tracerr"
 )
 

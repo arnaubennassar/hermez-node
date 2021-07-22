@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/common"
 	"github.com/iden3/go-merkletree"
 )
 
-func AddAdditionalInformation(blocks []common.BlockData) {
+func AddAditionalInformation(blocks []common.BlockData) {
 	for i := range blocks {
 		blocks[i].Block.Timestamp = time.Now().Add(time.Second * 13).UTC()
 		blocks[i].Block.Hash = ethCommon.BigToHash(big.NewInt(blocks[i].Block.Num))

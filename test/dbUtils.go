@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	dbUtils "github.com/hermeznetwork/hermez-node/db"
+	dbUtils "github.com/arnaubennassar/hermez-node/db"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )

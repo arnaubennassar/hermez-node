@@ -1,8 +1,6 @@
 package common
 
 import (
-	"encoding/hex"
-	"fmt"
 	"time"
 
 	ethCommon "github.com/ethereum/go-ethereum/common"
@@ -124,15 +122,11 @@ func (a *AccountCreationAuth) Sign(signHash func(hash []byte) ([]byte, error),
 // chainID and hermezContractAddress passed by parameter. VerifySignature
 // follows the EIP-712 encoding.
 func (a *AccountCreationAuth) VerifySignature(chainID uint16,
-	hermezContractAddr ethCommon.Address) (bool, error) {
+	hermezContractAddr ethCommon.Address) bool {
 	// Calculate hash to be signed
 	hash, err := a.HashToSign(chainID, hermezContractAddr)
 	if err != nil {
-		signatureV := hex.EncodeToString(a.Signature)
-		return false, fmt.Errorf("error calculating hash to be signed: %s. "+
-			"ChainId: %d. HermezContractAddress: %s. EthereumAddress: %s. Bjj: %s. "+
-			"Signature: %s. Timestamp: %s", err.Error(), chainID, hermezContractAddr.String(),
-			a.EthAddr.String(), BjjToString(a.BJJ), signatureV, a.Timestamp.String())
+		return false
 	}
 
 	var sig [65]byte
@@ -142,27 +136,13 @@ func (a *AccountCreationAuth) VerifySignature(chainID uint16,
 	// Get public key from Signature
 	pubKBytes, err := ethCrypto.Ecrecover(hash, sig[:])
 	if err != nil {
-		signatureV := hex.EncodeToString(a.Signature)
-		return false, fmt.Errorf("error getting public key from Signature: %s. "+
-			"ChainId: %d. HermezContractAddress: %s. EthereumAddress: %s. Bjj: %s. "+
-			"Signature: %s. Timestamp: %s", err.Error(), chainID, hermezContractAddr.String(),
-			a.EthAddr.String(), BjjToString(a.BJJ), signatureV, a.Timestamp.String())
+		return false
 	}
 	pubK, err := ethCrypto.UnmarshalPubkey(pubKBytes)
 	if err != nil {
-		signatureV := hex.EncodeToString(a.Signature)
-		return false, fmt.Errorf("error unmarshalling public key: %s. ChainId: %d. "+
-			"HermezContractAddress: %s. EthereumAddress: %s. Bjj: %s. Signature: %s. "+
-			"Timestamp: %s", err.Error(), chainID, hermezContractAddr.String(),
-			a.EthAddr.String(), BjjToString(a.BJJ), signatureV, a.Timestamp.String())
+		return false
 	}
 	// Get addr from pubK
 	addr := ethCrypto.PubkeyToAddress(*pubK)
-	if addr != a.EthAddr {
-		signatureV := hex.EncodeToString(a.Signature)
-		return false, fmt.Errorf("error: Ethereum address doesn't match with the one used in the signature. "+
-			"ChainId: %d. HermezContractAddress: %s. EthereumAddress: %s. Bjj: %s. Signature: %s. Timestamp: %s",
-			chainID, hermezContractAddr.String(), a.EthAddr.String(), BjjToString(a.BJJ), signatureV, a.Timestamp.String())
-	}
-	return true, nil
+	return addr == a.EthAddr
 }

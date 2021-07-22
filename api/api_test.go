@@ -16,18 +16,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/api/stateapiupdater"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/db/l2db"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/test"
+	"github.com/arnaubennassar/hermez-node/test/til"
+	"github.com/arnaubennassar/hermez-node/test/txsets"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	swagger "github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/api/stateapiupdater"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/db/l2db"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/test"
-	"github.com/hermeznetwork/hermez-node/test/til"
-	"github.com/hermeznetwork/hermez-node/test/txsets"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/stretchr/testify/require"
 )
@@ -177,7 +177,7 @@ type testCommon struct {
 	accounts         []testAccount
 	txs              []testTx
 	exits            []testExit
-	poolTxsToSend    []common.PoolL2Tx
+	poolTxsToSend    []testPoolTxSend
 	poolTxsToReceive []testPoolTxReceive
 	auths            []testAuth
 	router           *swagger.Router
@@ -212,12 +212,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	// L2DB
-	nodeConfig := &historydb.NodeConfig{
-		MaxPoolTxs: 10,
-		MinFeeUSD:  0.000000000000001,
-		MaxFeeUSD:  10000000000,
-	}
-	l2DB := l2db.NewL2DB(database, database, 10, 1000, nodeConfig.MinFeeUSD, nodeConfig.MaxFeeUSD, 24*time.Hour, apiConnCon)
+	l2DB := l2db.NewL2DB(database, database, 10, 1000, 0.0, 1000.0, 24*time.Hour, apiConnCon)
 	test.WipeDB(l2DB.DB()) // this will clean HistoryDB and L2DB
 	// Config (smart contract constants)
 	chainID := uint16(0)
@@ -246,6 +241,11 @@ func TestMain(m *testing.M) {
 	if err := hdb.SetConstants(constants); err != nil {
 		panic(err)
 	}
+	nodeConfig := &historydb.NodeConfig{
+		MaxPoolTxs: 10,
+		MinFeeUSD:  0,
+		MaxFeeUSD:  10000000000,
+	}
 	if err := hdb.SetNodeConfig(nodeConfig); err != nil {
 		panic(err)
 	}
@@ -257,7 +257,6 @@ func TestMain(m *testing.M) {
 		apiGin,
 		hdb,
 		l2DB,
-		nil,
 		nil,
 		nil,
 	)
@@ -296,7 +295,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	AddAdditionalInformation(blocksData)
+	AddAditionalInformation(blocksData)
 	// Generate L2 Txs with til
 	commonPoolTxs, err := tcc.GeneratePoolL2Txs(txsets.SetPoolL2MinimumFlow0)
 	if err != nil {
@@ -562,21 +561,21 @@ func TestMain(m *testing.M) {
 	for i := 0; i < len(accounts); i++ {
 		balance := new(big.Int)
 		balance.SetString(string(*accounts[i].Balance), 10)
-		queryAccount, err := common.StringToIdx(string(accounts[i].Idx), "foo")
+		idx, err := common.StringToIdx(string(accounts[i].Idx), "foo")
 		if err != nil {
 			panic(err)
 		}
 		accUpdates = append(accUpdates, common.AccountUpdate{
 			EthBlockNum: 0,
 			BatchNum:    1,
-			Idx:         *queryAccount.AccountIndex,
+			Idx:         *idx,
 			Nonce:       0,
 			Balance:     balance,
 		})
 		accUpdates = append(accUpdates, common.AccountUpdate{
 			EthBlockNum: 0,
 			BatchNum:    1,
-			Idx:         *queryAccount.AccountIndex,
+			Idx:         *idx,
 			Nonce:       accounts[i].Nonce,
 			Balance:     balance,
 		})
@@ -667,7 +666,6 @@ func TestTimeout(t *testing.T) {
 		apiGinTO,
 		hdbTO,
 		l2DBTO,
-		nil,
 		nil,
 		nil,
 	)
@@ -822,7 +820,6 @@ func doBadReq(method, path string, reqBody io.Reader, expectedResponseCode int) 
 	ctx := context.Background()
 	client := &http.Client{}
 	httpReq, _ := http.NewRequest(method, path, reqBody)
-	httpReq.Header.Add("Content-Type", "application/json")
 	route, pathParams, err := tc.router.FindRoute(httpReq.Method, httpReq.URL)
 	if err != nil {
 		return tracerr.Wrap(err)

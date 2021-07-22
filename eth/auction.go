@@ -6,6 +6,9 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	HermezAuctionProtocol "github.com/arnaubennassar/hermez-node/eth/contracts/auction"
+	"github.com/arnaubennassar/hermez-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -13,9 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/hermeznetwork/hermez-node/common"
-	auction "github.com/hermeznetwork/hermez-node/eth/contracts/auction"
-	"github.com/hermeznetwork/hermez-node/log"
 	"github.com/hermeznetwork/tracerr"
 )
 
@@ -271,7 +271,7 @@ type AuctionClient struct {
 	client      *EthereumClient
 	chainID     *big.Int
 	address     ethCommon.Address
-	auction     *auction.Auction
+	auction     *HermezAuctionProtocol.HermezAuctionProtocol
 	token       *TokenClient
 	contractAbi abi.ABI
 	opts        *bind.CallOpts
@@ -280,11 +280,11 @@ type AuctionClient struct {
 // NewAuctionClient creates a new AuctionClient.  `tokenAddress` is the address of the HEZ tokens.
 func NewAuctionClient(client *EthereumClient, address, tokenAddress ethCommon.Address) (*AuctionClient, error) {
 	contractAbi, err :=
-		abi.JSON(strings.NewReader(string(auction.AuctionABI)))
+		abi.JSON(strings.NewReader(string(HermezAuctionProtocol.HermezAuctionProtocolABI)))
 	if err != nil {
 		return nil, tracerr.Wrap(err)
 	}
-	auction, err := auction.NewAuction(address, client.Client())
+	auction, err := HermezAuctionProtocol.NewHermezAuctionProtocol(address, client.Client())
 	if err != nil {
 		return nil, tracerr.Wrap(err)
 	}

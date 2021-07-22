@@ -3,9 +3,9 @@ package parsers
 import (
 	"fmt"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/l2db"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/l2db"
 	"github.com/hermeznetwork/tracerr"
 	"gopkg.in/go-playground/validator.v9"
 )
@@ -82,11 +82,11 @@ func PoolTxsTxsFiltersStructValidation(sl validator.StructLevel) {
 func ParsePoolTxsFilters(c *gin.Context, v *validator.Validate) (l2db.GetPoolTxsAPIRequest, error) {
 	var poolTxsFilter PoolTxsFilters
 	if err := c.BindQuery(&poolTxsFilter); err != nil {
-		return l2db.GetPoolTxsAPIRequest{}, tracerr.Wrap(err)
+		return l2db.GetPoolTxsAPIRequest{}, err
 	}
 
 	if err := v.Struct(poolTxsFilter); err != nil {
-		return l2db.GetPoolTxsAPIRequest{}, tracerr.Wrap(err)
+		return l2db.GetPoolTxsAPIRequest{}, err
 	}
 
 	// TokenID
@@ -127,17 +127,17 @@ func ParsePoolTxsFilters(c *gin.Context, v *validator.Validate) (l2db.GetPoolTxs
 	}
 
 	// Idx
-	queryAccount, err := common.StringToIdx(poolTxsFilter.AccountIndex, "accountIndex")
+	idx, err := common.StringToIdx(poolTxsFilter.AccountIndex, "accountIndex")
 	if err != nil {
 		return l2db.GetPoolTxsAPIRequest{}, tracerr.Wrap(err)
 	}
 
-	fromQueryAccount, err := common.StringToIdx(poolTxsFilter.FromAccountIndex, "fromAccountIndex")
+	fromIdx, err := common.StringToIdx(poolTxsFilter.FromAccountIndex, "fromAccountIndex")
 	if err != nil {
 		return l2db.GetPoolTxsAPIRequest{}, tracerr.Wrap(err)
 	}
 
-	toQueryAccount, err := common.StringToIdx(poolTxsFilter.ToAccountIndex, "toAccountIndex")
+	toIdx, err := common.StringToIdx(poolTxsFilter.ToAccountIndex, "toAccountIndex")
 	if err != nil {
 		return l2db.GetPoolTxsAPIRequest{}, tracerr.Wrap(err)
 	}
@@ -161,9 +161,9 @@ func ParsePoolTxsFilters(c *gin.Context, v *validator.Validate) (l2db.GetPoolTxs
 		ToBjj:       toBjj,
 		TxType:      txType,
 		TokenID:     tokenID,
-		Idx:         queryAccount.AccountIndex,
-		FromIdx:     fromQueryAccount.AccountIndex,
-		ToIdx:       toQueryAccount.AccountIndex,
+		Idx:         idx,
+		FromIdx:     fromIdx,
+		ToIdx:       toIdx,
 		State:       txState,
 
 		FromItem: poolTxsFilter.FromItem,

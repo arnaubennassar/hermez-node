@@ -3,7 +3,7 @@ package metric
 import (
 	"time"
 
-	"github.com/hermeznetwork/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/log"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

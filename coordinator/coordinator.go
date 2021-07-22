@@ -48,19 +48,19 @@ import (
 	"sync"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/batchbuilder"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/config"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/db/l2db"
+	"github.com/arnaubennassar/hermez-node/eth"
+	"github.com/arnaubennassar/hermez-node/etherscan"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/prover"
+	"github.com/arnaubennassar/hermez-node/synchronizer"
+	"github.com/arnaubennassar/hermez-node/txprocessor"
+	"github.com/arnaubennassar/hermez-node/txselector"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/batchbuilder"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/config"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/db/l2db"
-	"github.com/hermeznetwork/hermez-node/eth"
-	"github.com/hermeznetwork/hermez-node/etherscan"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/prover"
-	"github.com/hermeznetwork/hermez-node/synchronizer"
-	"github.com/hermeznetwork/hermez-node/txprocessor"
-	"github.com/hermeznetwork/hermez-node/txselector"
 	"github.com/hermeznetwork/tracerr"
 )
 
@@ -154,11 +154,9 @@ type Config struct {
 	// EthNoReuseNonce disables reusing nonces of pending transactions for
 	// new replacement transactions
 	EthNoReuseNonce bool
-	// MaxGasPrice is the maximum gas price in gwei allowed for ethereum
+	// MaxGasPrice is the maximum gas price allowed for ethereum
 	// transactions
-	MaxGasPrice int64
-	// MinGasPrice is the minimum gas price in gwei allowed for ethereum
-	MinGasPrice int64
+	MaxGasPrice *big.Int
 	// GasPriceIncPerc is the percentage increase of gas price set in an
 	// ethereum transaction from the suggested gas price by the ehtereum
 	// node
@@ -393,7 +391,7 @@ func canForge(auctionConstants *common.AuctionConstants, auctionVars *common.Auc
 	if slot.Forger == addr || (anyoneForge && mustForgeAtDeadline) {
 		return true
 	}
-	log.Debugw("canForge: can't forge because you didn't win the auction. Current slot auction winner: ", "slot.Forger", slot.Forger)
+	log.Debugw("canForge: can't forge", "slot.Forger", slot.Forger)
 	return false
 }
 

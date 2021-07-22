@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/log"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/log"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 )
@@ -721,33 +721,27 @@ func (tc *Context) generateKeys(userNames []string) {
 			// account already created
 			continue
 		}
+		// babyjubjub key
+		var sk babyjub.PrivateKey
+		var iBytes [8]byte
+		binary.LittleEndian.PutUint64(iBytes[:], uint64(i))
+		copy(sk[:], iBytes[:]) // only for testing
 
-		u := NewUser(i, userNames[i-1])
+		// eth address
+		var key ecdsa.PrivateKey
+		key.D = big.NewInt(int64(i)) // only for testing
+		key.PublicKey.X, key.PublicKey.Y = ethCrypto.S256().ScalarBaseMult(key.D.Bytes())
+		key.Curve = ethCrypto.S256()
+		addr := ethCrypto.PubkeyToAddress(key.PublicKey)
+
+		u := User{
+			Name:     userNames[i-1],
+			BJJ:      &sk,
+			EthSk:    &key,
+			Addr:     addr,
+			Accounts: make(map[common.TokenID]*Account),
+		}
 		tc.Users[userNames[i-1]] = &u
-	}
-}
-
-// NewUser creates a User deriving its keys at the path keyDerivationIndex
-func NewUser(keyDerivationIndex int, name string) User {
-	// babyjubjub key
-	var sk babyjub.PrivateKey
-	var iBytes [8]byte
-	binary.LittleEndian.PutUint64(iBytes[:], uint64(keyDerivationIndex))
-	copy(sk[:], iBytes[:]) // only for testing
-
-	// eth address
-	var key ecdsa.PrivateKey
-	key.D = big.NewInt(int64(keyDerivationIndex)) // only for testing
-	key.PublicKey.X, key.PublicKey.Y = ethCrypto.S256().ScalarBaseMult(key.D.Bytes())
-	key.Curve = ethCrypto.S256()
-	addr := ethCrypto.PubkeyToAddress(key.PublicKey)
-
-	return User{
-		Name:     name,
-		BJJ:      &sk,
-		EthSk:    &key,
-		Addr:     addr,
-		Accounts: make(map[common.TokenID]*Account),
 	}
 }
 

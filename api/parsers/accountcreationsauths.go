@@ -1,9 +1,9 @@
 package parsers
 
 import (
+	"github.com/arnaubennassar/hermez-node/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/common"
 	"github.com/hermeznetwork/tracerr"
 )
 

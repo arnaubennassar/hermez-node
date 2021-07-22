@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
 	"github.com/hermeznetwork/tracerr"
 	"gopkg.in/go-playground/validator.v9"
 )
@@ -17,10 +17,10 @@ type AccountFilter struct {
 }
 
 // ParseAccountFilter parses account filter to the account index
-func ParseAccountFilter(c *gin.Context) (common.QueryAccount, error) {
+func ParseAccountFilter(c *gin.Context) (*common.Idx, error) {
 	var accountFilter AccountFilter
 	if err := c.ShouldBindUri(&accountFilter); err != nil {
-		return common.QueryAccount{}, tracerr.Wrap(err)
+		return nil, tracerr.Wrap(err)
 	}
 	return common.StringToIdx(accountFilter.AccountIndex, "accountIndex")
 }

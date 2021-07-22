@@ -3,8 +3,8 @@ package txsets
 import (
 	"testing"
 
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/test/til"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/test/til"
 	"github.com/stretchr/testify/assert"
 )
 

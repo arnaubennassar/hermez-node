@@ -6,6 +6,9 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	WithdrawalDelayer "github.com/arnaubennassar/hermez-node/eth/contracts/withdrawalDelayer"
+	"github.com/arnaubennassar/hermez-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -13,9 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/hermeznetwork/hermez-node/common"
-	withdrawaldelayer "github.com/hermeznetwork/hermez-node/eth/contracts/withdrawaldelayer"
-	"github.com/hermeznetwork/hermez-node/log"
 	"github.com/hermeznetwork/tracerr"
 )
 
@@ -149,18 +149,18 @@ type WDelayerInterface interface {
 type WDelayerClient struct {
 	client      *EthereumClient
 	address     ethCommon.Address
-	wdelayer    *withdrawaldelayer.Withdrawaldelayer
+	wdelayer    *WithdrawalDelayer.WithdrawalDelayer
 	contractAbi abi.ABI
 	opts        *bind.CallOpts
 }
 
 // NewWDelayerClient creates a new WDelayerClient
 func NewWDelayerClient(client *EthereumClient, address ethCommon.Address) (*WDelayerClient, error) {
-	contractAbi, err := abi.JSON(strings.NewReader(string(withdrawaldelayer.WithdrawaldelayerABI)))
+	contractAbi, err := abi.JSON(strings.NewReader(string(WithdrawalDelayer.WithdrawalDelayerABI)))
 	if err != nil {
 		return nil, tracerr.Wrap(err)
 	}
-	wdelayer, err := withdrawaldelayer.NewWithdrawaldelayer(address, client.Client())
+	wdelayer, err := WithdrawalDelayer.NewWithdrawalDelayer(address, client.Client())
 	if err != nil {
 		return nil, tracerr.Wrap(err)
 	}

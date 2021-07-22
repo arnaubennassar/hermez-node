@@ -7,21 +7,20 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"regexp"
-	"strconv"
 	"strings"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/config"
+	dbUtils "github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/db/kvdb"
+	"github.com/arnaubennassar/hermez-node/db/l2db"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/node"
 	ethKeystore "github.com/ethereum/go-ethereum/accounts/keystore"
-	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/config"
-	dbUtils "github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/db/kvdb"
-	"github.com/hermeznetwork/hermez-node/db/l2db"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/node"
+	"github.com/hermeznetwork/hermez-go-sdk/account"
+	"github.com/hermeznetwork/hermez-go-sdk/client"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 	"github.com/jmoiron/sqlx"
@@ -29,15 +28,17 @@ import (
 )
 
 const (
-	flagCfg     = "cfg"
-	flagMode    = "mode"
-	flagSK      = "privatekey"
-	flagYes     = "yes"
-	flagBlock   = "block"
-	modeSync    = "sync"
-	modeCoord   = "coord"
-	nMigrations = "nMigrations"
-	flagAccount = "account"
+	flagCfg                 = "cfg"
+	flagMode                = "mode"
+	flagSK                  = "privatekey"
+	flagYes                 = "yes"
+	flagBlock               = "block"
+	modeSync                = "sync"
+	modeCoord               = "coord"
+	nMigrations             = "nMigrations"
+	flagAuctContractAddrHex = "auctContractAddrHex"
+	flagEthNodeURL          = "ethNodeUrl"
+	flagAccountAddrHex      = "accountAddrHex"
 )
 
 var (
@@ -316,52 +317,31 @@ func cmdServeAPI(c *cli.Context) error {
 }
 
 func cmdGetAccountDetails(c *cli.Context) error {
-	addr, bjj, accountIdxs, err := checkAccountParam(c)
-	if err != nil {
-		log.Error(err)
-		return nil
-	}
-	_cfg, err := parseCli(c)
-	if err != nil {
-		return tracerr.Wrap(fmt.Errorf("error parsing flags and config: %w", err))
-	}
-	cfg := _cfg.node
+	ethereumNodeURL := c.String(flagEthNodeURL)
+	auctionContractAddressHex := c.String(flagAuctContractAddrHex)
+	accountAddrHex := c.String(flagAccountAddrHex)
 
-	historyDB, err := openDBConexion(cfg)
+	hezClient, err := client.NewHermezClient(ethereumNodeURL, auctionContractAddressHex)
 	if err != nil {
-		log.Error(err)
-		return nil
+		log.Errorf("Error during Hermez client initialization: %s\n", err.Error())
+		return err
 	}
-
-	obj := historydb.GetAccountsAPIRequest{
-		EthAddr: addr,
-		Bjj:     bjj,
+	log.Infof("Connected to Hermez Smart Contracts...")
+	log.Infof("Pulling account info from a coordinator...")
+	accountDetails, err := account.GetAccountInfo(hezClient, accountAddrHex)
+	if err != nil {
+		log.Errorf("Error obtaining account details. Account: %s - Error: %s\n", accountAddrHex, err.Error())
+		return err
 	}
-	var apiAccounts []historydb.AccountAPI
-	if len(accountIdxs) == 0 {
-		apiAccounts, _, err = historyDB.GetAccountsAPI(obj)
-		if err != nil {
-			return tracerr.Wrap(fmt.Errorf("historyDB.GetAccountsAPI: %w", err))
-		}
-	} else {
-		for i := 0; i < len(accountIdxs); i++ {
-			apiAccount, err := historyDB.GetAccountAPI(accountIdxs[i])
-			if err != nil {
-				log.Debug(fmt.Errorf("historyDB.GetAccountAPI: %w", err))
-			} else {
-				apiAccounts = append(apiAccounts, *apiAccount)
-			}
-		}
-	}
-	log.Infof("Found %d account(s)", len(apiAccounts))
-	for index, account := range apiAccounts {
+	log.Infof("Found %d account(s)", len(accountDetails.Accounts))
+	for index, account := range accountDetails.Accounts {
 		log.Infof("Details for account %d", index)
-		log.Infof(" - Account index: %s", account.Idx)
-		log.Infof(" - Account BJJ  : %s", account.PublicKey)
-		log.Infof(" - Balance      : %s", *account.Balance)
-		log.Infof(" - HEZ Address  : %s", account.EthAddr)
-		log.Infof(" - Token name   : %s", account.TokenName)
-		log.Infof(" - Token symbol : %s", account.TokenSymbol)
+		log.Infof(" - Account index: %s", account.AccountIndex)
+		log.Infof(" - Account BJJ  : %s", account.BJJAddress)
+		log.Infof(" - Balance      : %s", account.Balance)
+		log.Infof(" - HEZ Address  : %s", account.HezEthereumAddress)
+		log.Infof(" - Token name   : %s", account.Token.Name)
+		log.Infof(" - Token symbol : %s", account.Token.Symbol)
 	}
 	return nil
 }
@@ -621,12 +601,23 @@ func main() {
 			Aliases: []string{},
 			Usage:   "get information about the specified account",
 			Action:  cmdGetAccountDetails,
-			Flags: append(flags,
+			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name:     flagAccount,
+					Name:     flagEthNodeURL,
+					Usage:    "ethereum node URL, example: http://geth.node.com:8545",
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:     flagAuctContractAddrHex,
+					Usage:    "auction contract address in hex",
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:     flagAccountAddrHex,
 					Usage:    "account address in hex",
 					Required: true,
-				}),
+				},
+			},
 		},
 	}
 
@@ -635,71 +626,4 @@ func main() {
 		fmt.Printf("\nError: %v\n", tracerr.Sprint(err))
 		os.Exit(1)
 	}
-}
-
-func checkAccountParam(c *cli.Context) (*ethCommon.Address, *babyjub.PublicKeyComp, []common.Idx, error) {
-	accountParam := c.String(flagAccount)
-	const characters = 42
-	var (
-		addr        *ethCommon.Address
-		accountIdxs []common.Idx
-		bjj         *babyjub.PublicKeyComp
-		err         error
-	)
-	matchIdx, _ := regexp.MatchString("^\\d+$", accountParam)
-	if strings.HasPrefix(accountParam, "0x") { //Check ethereum address
-		addr, err = common.HezStringToEthAddr("hez:"+accountParam, "hezEthereumAddress")
-		if err != nil {
-			return nil, nil, nil, err
-		}
-	} else if len(accountParam) > characters { //Check internal hermez account address
-		bjj, err = common.HezStringToBJJ(accountParam, "BJJ")
-		if err != nil {
-			return nil, nil, nil, err
-		}
-	} else if matchIdx { //Check tokenID
-		value, _ := strconv.Atoi(accountParam)
-		accountIdxs = append(accountIdxs, (common.Idx)(value))
-	} else {
-		return nil, nil, nil, fmt.Errorf("invalid parameter. Only accepted ethereum address, bjj address or account index")
-	}
-	return addr, bjj, accountIdxs, nil
-}
-
-func openDBConexion(cfg *config.Node) (*historydb.HistoryDB, error) {
-	dbWrite, err := dbUtils.InitSQLDB(
-		cfg.PostgreSQL.PortWrite,
-		cfg.PostgreSQL.HostWrite,
-		cfg.PostgreSQL.UserWrite,
-		cfg.PostgreSQL.PasswordWrite,
-		cfg.PostgreSQL.NameWrite,
-	)
-	if err != nil {
-		return nil, tracerr.Wrap(fmt.Errorf("dbUtils.InitSQLDB: %w", err))
-	}
-	var dbRead *sqlx.DB
-	if cfg.PostgreSQL.HostRead == "" {
-		dbRead = dbWrite
-	} else if cfg.PostgreSQL.HostRead == cfg.PostgreSQL.HostWrite {
-		return nil, tracerr.Wrap(fmt.Errorf(
-			"PostgreSQL.HostRead and PostgreSQL.HostWrite must be different",
-		))
-	} else {
-		dbRead, err = dbUtils.InitSQLDB(
-			cfg.PostgreSQL.PortRead,
-			cfg.PostgreSQL.HostRead,
-			cfg.PostgreSQL.UserRead,
-			cfg.PostgreSQL.PasswordRead,
-			cfg.PostgreSQL.NameRead,
-		)
-		if err != nil {
-			return nil, tracerr.Wrap(fmt.Errorf("dbUtils.InitSQLDB: %w", err))
-		}
-	}
-	apiConnCon := dbUtils.NewAPIConnectionController(
-		cfg.API.MaxSQLConnections,
-		cfg.API.SQLConnectionTimeout.Duration,
-	)
-	historyDB := historydb.NewHistoryDB(dbRead, dbWrite, apiConnCon)
-	return historyDB, nil
 }

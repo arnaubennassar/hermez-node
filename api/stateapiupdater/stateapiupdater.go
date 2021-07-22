@@ -12,9 +12,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/log"
 	"github.com/hermeznetwork/tracerr"
 )
 

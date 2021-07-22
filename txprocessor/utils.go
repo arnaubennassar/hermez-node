@@ -3,7 +3,7 @@ package txprocessor
 import (
 	"math/big"
 
-	"github.com/hermeznetwork/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/common"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 	"github.com/iden3/go-merkletree"
 )

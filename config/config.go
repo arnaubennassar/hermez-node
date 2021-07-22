@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/arnaubennassar/hermez-node/api/stateapiupdater"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/priceupdater"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/api/stateapiupdater"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/priceupdater"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 	"gopkg.in/go-playground/validator.v9"
@@ -192,9 +192,7 @@ type Coordinator struct {
 	EthClient struct {
 		// MaxGasPrice is the maximum gas price allowed for ethereum
 		// transactions
-		MaxGasPrice int64 `validate:"required"`
-		// MinGasPrice is the minimum gas price in gwei allowed for ethereum
-		MinGasPrice int64 `validate:"required"`
+		MaxGasPrice *big.Int `validate:"required"`
 		// GasPriceIncPerc is the percentage increase of gas price set
 		// in an ethereum transaction from the suggested gas price by
 		// the ethereum node

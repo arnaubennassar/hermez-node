@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	dbUtils "github.com/arnaubennassar/hermez-node/db"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/common"
-	dbUtils "github.com/hermeznetwork/hermez-node/db"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 
 	// nolint sqlite driver

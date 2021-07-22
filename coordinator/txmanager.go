@@ -7,18 +7,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/l2db"
+	"github.com/arnaubennassar/hermez-node/eth"
+	"github.com/arnaubennassar/hermez-node/etherscan"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/synchronizer"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/l2db"
-	"github.com/hermeznetwork/hermez-node/eth"
-	"github.com/hermeznetwork/hermez-node/etherscan"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/synchronizer"
 	"github.com/hermeznetwork/tracerr"
 )
 
@@ -131,9 +131,16 @@ func (t *TxManager) syncSCVars(vars common.SCVariablesPtr) {
 // NewAuth generates a new auth object for an ethereum transaction
 func (t *TxManager) NewAuth(ctx context.Context, batchInfo *BatchInfo) (*bind.TransactOpts, error) {
 	// First we try getting the gas price from etherscan. Later we get the gas price from the ethereum node.
+
 	var err error
 
-	eGasPrice := big.NewInt(t.cfg.MinGasPrice)
+	// If gas price is higher than 2000, probably we are going to get the gasLimit exceed error
+	const maxGasPrice = 2000
+	// If gas price is to low, probably there is an error or at Etherscan or Ethereum node.
+	// So setting a minimum value
+	const minGasPrice = 5
+
+	eGasPrice := big.NewInt(minGasPrice)
 
 	if t.etherscanService != nil {
 		etherscanGasPrice, err := t.etherscanService.GetGasPrice(ctx)
@@ -153,8 +160,8 @@ func (t *TxManager) NewAuth(ctx context.Context, batchInfo *BatchInfo) (*bind.Tr
 		return nil, tracerr.Wrap(err)
 	}
 
-	maxGasPriceBig := big.NewInt(t.cfg.MaxGasPrice)
-	minGasPriceBig := big.NewInt(t.cfg.MinGasPrice)
+	maxGasPriceBig := big.NewInt(maxGasPrice)
+	minGasPriceBig := big.NewInt(minGasPrice)
 
 	if eGasPrice.Cmp(maxGasPriceBig) == 1 {
 		eGasPrice = maxGasPriceBig
@@ -257,9 +264,7 @@ func (t *TxManager) sendRollupForgeBatch(ctx context.Context, batchInfo *BatchIn
 	}
 	auth.Context = ctx
 	for attempt := 0; attempt < t.cfg.EthClientAttempts; attempt++ {
-		maxGasPrice := big.NewInt(t.cfg.MaxGasPrice)
-		maxGasPrice.Mul(maxGasPrice, big.NewInt(params.GWei))
-		if auth.GasPrice.Cmp(maxGasPrice) > 0 {
+		if auth.GasPrice.Cmp(t.cfg.MaxGasPrice) > 0 {
 			return tracerr.Wrap(fmt.Errorf("calculated gasPrice (%v) > maxGasPrice (%v)",
 				auth.GasPrice, t.cfg.MaxGasPrice))
 		}

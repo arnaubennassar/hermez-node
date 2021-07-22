@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
+	dbUtils "github.com/arnaubennassar/hermez-node/db"
 	"github.com/gobuffalo/packr/v2"
-	dbUtils "github.com/hermeznetwork/hermez-node/db"
 	"github.com/jmoiron/sqlx"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/stretchr/testify/require"

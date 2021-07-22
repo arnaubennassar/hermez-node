@@ -3,9 +3,9 @@ package parsers
 import (
 	"fmt"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
 	"github.com/hermeznetwork/tracerr"
 	"gopkg.in/go-playground/validator.v9"
 )
@@ -19,11 +19,11 @@ type HistoryTxFilter struct {
 func ParseHistoryTxFilter(c *gin.Context) (common.TxID, error) {
 	var historyTxFilter HistoryTxFilter
 	if err := c.ShouldBindUri(&historyTxFilter); err != nil {
-		return common.TxID{}, tracerr.Wrap(err)
+		return common.TxID{}, err
 	}
 	txID, err := common.NewTxIDFromString(historyTxFilter.TxID)
 	if err != nil {
-		return common.TxID{}, tracerr.Wrap(fmt.Errorf("invalid txID"))
+		return common.TxID{}, tracerr.Wrap(fmt.Errorf("invalid %s", err))
 	}
 	return txID, nil
 }
@@ -82,7 +82,7 @@ func HistoryTxsFiltersStructValidation(sl validator.StructLevel) {
 func ParseHistoryTxsFilters(c *gin.Context, v *validator.Validate) (historydb.GetTxsAPIRequest, error) {
 	var historyTxsFilters HistoryTxsFilters
 	if err := c.ShouldBindQuery(&historyTxsFilters); err != nil {
-		return historydb.GetTxsAPIRequest{}, tracerr.Wrap(err)
+		return historydb.GetTxsAPIRequest{}, err
 	}
 
 	if err := v.Struct(historyTxsFilters); err != nil {
@@ -126,17 +126,17 @@ func ParseHistoryTxsFilters(c *gin.Context, v *validator.Validate) (historydb.Ge
 	}
 
 	// Idx
-	queryAccount, err := common.StringToIdx(historyTxsFilters.AccountIndex, "accountIndex")
+	idx, err := common.StringToIdx(historyTxsFilters.AccountIndex, "accountIndex")
 	if err != nil {
 		return historydb.GetTxsAPIRequest{}, tracerr.Wrap(err)
 	}
 
-	fromQueryAccount, err := common.StringToIdx(historyTxsFilters.FromAccountIndex, "fromAccountIndex")
+	fromIdx, err := common.StringToIdx(historyTxsFilters.FromAccountIndex, "fromAccountIndex")
 	if err != nil {
 		return historydb.GetTxsAPIRequest{}, tracerr.Wrap(err)
 	}
 
-	toQueryAccount, err := common.StringToIdx(historyTxsFilters.ToAccountIndex, "toAccountIndex")
+	toIdx, err := common.StringToIdx(historyTxsFilters.ToAccountIndex, "toAccountIndex")
 	if err != nil {
 		return historydb.GetTxsAPIRequest{}, tracerr.Wrap(err)
 	}
@@ -154,9 +154,9 @@ func ParseHistoryTxsFilters(c *gin.Context, v *validator.Validate) (historydb.Ge
 		FromBjj:           fromBjj,
 		ToBjj:             toBjj,
 		TokenID:           tokenID,
-		Idx:               queryAccount.AccountIndex,
-		FromIdx:           fromQueryAccount.AccountIndex,
-		ToIdx:             toQueryAccount.AccountIndex,
+		Idx:               idx,
+		FromIdx:           fromIdx,
+		ToIdx:             toIdx,
 		BatchNum:          historyTxsFilters.BatchNum,
 		TxType:            txType,
 		IncludePendingL1s: historyTxsFilters.IncludePendingTxs,
