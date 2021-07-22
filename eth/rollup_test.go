@@ -8,9 +8,9 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/arnaubennassar/hermez-node/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	ethCrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/hermeznetwork/hermez-node/common"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/kvdb"
-	"github.com/hermeznetwork/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/kvdb"
+	"github.com/arnaubennassar/hermez-node/log"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/iden3/go-merkletree"
 	"github.com/iden3/go-merkletree/db"
@@ -149,6 +149,7 @@ func NewStateDB(cfg Config) (*StateDB, error) {
 		return nil, tracerr.Wrap(
 			fmt.Errorf("invalid StateDB parameters: StateDB type==TypeStateDB can not have nLevels!=0"))
 	}
+
 	return &StateDB{
 		cfg: cfg,
 		db:  kv,

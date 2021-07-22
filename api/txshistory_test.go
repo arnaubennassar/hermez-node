@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hermeznetwork/hermez-node/api/apitypes"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/test"
+	"github.com/arnaubennassar/hermez-node/api/apitypes"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/test"
 	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -347,7 +347,7 @@ func TestGetHistoryTxs(t *testing.T) {
 	fetchedTxs = []testTx{}
 	limit = 4
 	idxStr := tc.txs[0].ToIdx
-	queryAccount, err := common.StringToIdx(idxStr, "")
+	idx, err := common.StringToIdx(idxStr, "")
 	assert.NoError(t, err)
 	path = fmt.Sprintf(
 		"%s?accountIndex=%s&limit=%d",
@@ -360,18 +360,18 @@ func TestGetHistoryTxs(t *testing.T) {
 		if tc.txs[i].BatchNum == nil {
 			continue
 		}
-		var fromQueryAccount common.QueryAccount
+		var fromIdx *common.Idx
 		if tc.txs[i].FromIdx != nil {
-			fromQueryAccount, err = common.StringToIdx(*tc.txs[i].FromIdx, "")
+			fromIdx, err = common.StringToIdx(*tc.txs[i].FromIdx, "")
 			assert.NoError(t, err)
-			if *fromQueryAccount.AccountIndex == *queryAccount.AccountIndex {
+			if *fromIdx == *idx {
 				idxTxs = append(idxTxs, tc.txs[i])
 				continue
 			}
 		}
-		toQueryAccount, err := common.StringToIdx((tc.txs[i].ToIdx), "")
+		toIdx, err := common.StringToIdx((tc.txs[i].ToIdx), "")
 		assert.NoError(t, err)
-		if *toQueryAccount.AccountIndex == *queryAccount.AccountIndex {
+		if *toIdx == *idx {
 			idxTxs = append(idxTxs, tc.txs[i])
 		}
 	}
@@ -383,11 +383,11 @@ func TestGetHistoryTxs(t *testing.T) {
 	err = doGoodReqPaginated(path, db.OrderAsc, &testTxsResponse{}, appendIter)
 	assert.NoError(t, err)
 	for i := 0; i < len(tc.txs); i++ {
-		var fromQueryAccount common.QueryAccount
+		var fromIdx *common.Idx
 		if tc.txs[i].FromIdx != nil {
-			fromQueryAccount, err = common.StringToIdx(*tc.txs[i].FromIdx, "")
+			fromIdx, err = common.StringToIdx(*tc.txs[i].FromIdx, "")
 			assert.NoError(t, err)
-			if *fromQueryAccount.AccountIndex == *queryAccount.AccountIndex {
+			if *fromIdx == *idx {
 				idxTxs = append(idxTxs, tc.txs[i])
 				continue
 			}
@@ -401,9 +401,9 @@ func TestGetHistoryTxs(t *testing.T) {
 	assert.NoError(t, err)
 	idxTxs = []testTx{}
 	for i := 0; i < len(tc.txs); i++ {
-		toQueryAccount, err := common.StringToIdx(tc.txs[i].ToIdx, "")
+		toIdx, err := common.StringToIdx(tc.txs[i].ToIdx, "")
 		assert.NoError(t, err)
-		if *toQueryAccount.AccountIndex == *queryAccount.AccountIndex {
+		if *toIdx == *idx {
 			idxTxs = append(idxTxs, tc.txs[i])
 		}
 	}
@@ -495,7 +495,7 @@ func TestGetHistoryTxs(t *testing.T) {
 	// 400
 	path = fmt.Sprintf(
 		"%s?accountIndex=%s&hezEthereumAddress=%s",
-		endpoint, queryAccount.AccountIndex, account.EthAddr,
+		endpoint, idx, account.EthAddr,
 	)
 	err = doBadReq("GET", path, nil, 400)
 	assert.NoError(t, err)

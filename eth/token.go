@@ -1,16 +1,16 @@
 package eth
 
 import (
+	HEZ "github.com/arnaubennassar/hermez-node/eth/contracts/tokenHEZ"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	tokenhez "github.com/hermeznetwork/hermez-node/eth/contracts/tokenhez"
 	"github.com/hermeznetwork/tracerr"
 )
 
 // TokenClient is the implementation of the interface to the Hez Token Smart Contract in ethereum.
 type TokenClient struct {
 	client  *EthereumClient
-	hez     *tokenhez.Tokenhez
+	hez     *HEZ.HEZ
 	address ethCommon.Address
 	name    string
 	opts    *bind.CallOpts
@@ -18,7 +18,7 @@ type TokenClient struct {
 
 // NewTokenClient creates a new TokenClient
 func NewTokenClient(client *EthereumClient, address ethCommon.Address) (*TokenClient, error) {
-	hez, err := tokenhez.NewTokenhez(address, client.Client())
+	hez, err := HEZ.NewHEZ(address, client.Client())
 	if err != nil {
 		return nil, tracerr.Wrap(err)
 	}

@@ -4,9 +4,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/hermeznetwork/hermez-node/api/apitypes"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/api/apitypes"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

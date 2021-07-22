@@ -13,7 +13,7 @@ be synced.
 The synchronization of the events in each smart contracts are done
 in the methods `rollupSync`, `auctionSync` and `wdelayerSync`, which in turn
 use the interface code to read each smart contract state and events found in
-"github.com/hermeznetwork/hermez-node/eth".  After these three methods are
+"github.com/arnaubennassar/hermez-node/eth".  After these three methods are
 called, an object of type `common.BlockData` is built containing all the
 updates and events that happened in that block, and it is inserted in the
 HistoryDB in a single SQL transaction.
@@ -40,15 +40,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/db/l2db"
+	"github.com/arnaubennassar/hermez-node/db/statedb"
+	"github.com/arnaubennassar/hermez-node/eth"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/metric"
+	"github.com/arnaubennassar/hermez-node/txprocessor"
 	"github.com/ethereum/go-ethereum"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/db/l2db"
-	"github.com/hermeznetwork/hermez-node/db/statedb"
-	"github.com/hermeznetwork/hermez-node/eth"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/metric"
-	"github.com/hermeznetwork/hermez-node/txprocessor"
 	"github.com/hermeznetwork/tracerr"
 )
 

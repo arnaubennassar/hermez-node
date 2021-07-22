@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hermeznetwork/hermez-node/test/proofserver"
+	"github.com/arnaubennassar/hermez-node/test/proofserver"
 )
 
 func main() {

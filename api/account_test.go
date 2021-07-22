@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hermeznetwork/hermez-node/api/apitypes"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/api/apitypes"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -157,11 +157,6 @@ func TestGetAccounts(t *testing.T) {
 	require.NoError(t, doGoodReq("GET", path, nil, &account))
 	account.Token.ItemID = 0
 	assert.Equal(t, fetchedAccounts[2], account)
-
-	// Test invalid token symbol GetAccount
-	path = fmt.Sprintf("%s/%s", endpoint, "hez:UNI:258")
-	account = testAccount{}
-	require.Error(t, doGoodReq("GET", path, nil, &account))
 
 	// 400
 	path = fmt.Sprintf("%s/hez:12345", endpoint)

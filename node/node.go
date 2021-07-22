@@ -17,7 +17,6 @@ package node
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net"
@@ -25,33 +24,32 @@ import (
 	"sync"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/api"
+	"github.com/arnaubennassar/hermez-node/api/stateapiupdater"
+	"github.com/arnaubennassar/hermez-node/batchbuilder"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/config"
+	"github.com/arnaubennassar/hermez-node/coordinator"
+	dbUtils "github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/db/l2db"
+	"github.com/arnaubennassar/hermez-node/db/statedb"
+	"github.com/arnaubennassar/hermez-node/eth"
+	"github.com/arnaubennassar/hermez-node/etherscan"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/priceupdater"
+	"github.com/arnaubennassar/hermez-node/prover"
+	"github.com/arnaubennassar/hermez-node/synchronizer"
+	"github.com/arnaubennassar/hermez-node/test/debugapi"
+	"github.com/arnaubennassar/hermez-node/txprocessor"
+	"github.com/arnaubennassar/hermez-node/txselector"
 	"github.com/ethereum/go-ethereum/accounts"
 	ethKeystore "github.com/ethereum/go-ethereum/accounts/keystore"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/api"
-	"github.com/hermeznetwork/hermez-node/api/stateapiupdater"
-	"github.com/hermeznetwork/hermez-node/batchbuilder"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/config"
-	"github.com/hermeznetwork/hermez-node/coordinator"
-	dbUtils "github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/db/l2db"
-	"github.com/hermeznetwork/hermez-node/db/statedb"
-	"github.com/hermeznetwork/hermez-node/eth"
-	"github.com/hermeznetwork/hermez-node/etherscan"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/priceupdater"
-	"github.com/hermeznetwork/hermez-node/prover"
-	"github.com/hermeznetwork/hermez-node/synchronizer"
-	"github.com/hermeznetwork/hermez-node/test/debugapi"
-	"github.com/hermeznetwork/hermez-node/txprocessor"
-	"github.com/hermeznetwork/hermez-node/txselector"
 	"github.com/hermeznetwork/tracerr"
-	"github.com/iden3/go-iden3-crypto/babyjub"
 	"github.com/jmoiron/sqlx"
 	"github.com/russross/meddler"
 )
@@ -305,31 +303,21 @@ func NewNode(mode Mode, cfg *config.Node, version string) (*Node, error) {
 			cfg.Coordinator.EthClient.Keystore.Password); err != nil {
 			return nil, tracerr.Wrap(err)
 		}
-		//Swap bjj endianness
-		decodedBjjPubKey, err := hex.DecodeString(cfg.Coordinator.FeeAccount.BJJ.String())
-		if err != nil {
-			log.Error("Error decoding BJJ public key from config file. Error: ", err.Error())
-			return nil, tracerr.Wrap(err)
-		}
-		bSwapped := common.SwapEndianness(decodedBjjPubKey)
-		var bjj babyjub.PublicKeyComp
-		copy(bjj[:], bSwapped[:])
-
 		auth := &common.AccountCreationAuth{
 			EthAddr: cfg.Coordinator.FeeAccount.Address,
-			BJJ:     bjj,
+			BJJ:     cfg.Coordinator.FeeAccount.BJJ,
 		}
 		if err := auth.Sign(func(msg []byte) ([]byte, error) {
 			return keyStore.SignHash(feeAccount, msg)
 		}, chainIDU16, cfg.SmartContracts.Rollup); err != nil {
 			return nil, tracerr.Wrap(err)
 		}
-		coordAccount := txselector.CoordAccount{
+		coordAccount := &txselector.CoordAccount{
 			Addr:                cfg.Coordinator.FeeAccount.Address,
-			BJJ:                 bjj,
+			BJJ:                 cfg.Coordinator.FeeAccount.BJJ,
 			AccountCreationAuth: auth.Signature,
 		}
-		txSelector, err := txselector.NewTxSelector(&coordAccount,
+		txSelector, err := txselector.NewTxSelector(coordAccount,
 			cfg.Coordinator.TxSelector.Path, stateDB, l2DB)
 		if err != nil {
 			return nil, tracerr.Wrap(err)
@@ -411,7 +399,6 @@ func NewNode(mode Mode, cfg *config.Node, version string) (*Node, error) {
 				EthNoReuseNonce:         cfg.Coordinator.EthClient.NoReuseNonce,
 				EthTxResendTimeout:      cfg.Coordinator.EthClient.TxResendTimeout.Duration,
 				MaxGasPrice:             cfg.Coordinator.EthClient.MaxGasPrice,
-				MinGasPrice:             cfg.Coordinator.EthClient.MinGasPrice,
 				GasPriceIncPerc:         cfg.Coordinator.EthClient.GasPriceIncPerc,
 				TxManagerCheckInterval:  cfg.Coordinator.EthClient.CheckLoopInterval.Duration,
 				DebugBatchPath:          cfg.Coordinator.Debug.BatchPath,
@@ -459,7 +446,6 @@ func NewNode(mode Mode, cfg *config.Node, version string) (*Node, error) {
 			server,
 			historyDB,
 			l2DB,
-			stateDB,
 			ethClient,
 			&cfg.Coordinator.ForgerAddress,
 		)
@@ -574,7 +560,6 @@ func NewAPIServer(mode Mode, cfg *config.APIServer, version string, ethClient *e
 		server,
 		historyDB,
 		l2DB,
-		nil,
 		ethClient,
 		forgerAddress,
 	)
@@ -631,7 +616,6 @@ func NewNodeAPI(
 	server *gin.Engine,
 	hdb *historydb.HistoryDB,
 	l2db *l2db.L2DB,
-	stateDB *statedb.StateDB,
 	ethClient *ethclient.Client,
 	forgerAddress *ethCommon.Address,
 ) (*NodeAPI, error) {
@@ -643,7 +627,6 @@ func NewNodeAPI(
 		engine,
 		hdb,
 		l2db,
-		stateDB,
 		ethClient,
 		forgerAddress,
 	)

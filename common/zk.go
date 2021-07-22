@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/hermeznetwork/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/log"
 	"github.com/hermeznetwork/tracerr"
 	cryptoConstants "github.com/iden3/go-iden3-crypto/constants"
 	"github.com/iden3/go-merkletree"
@@ -126,17 +126,7 @@ type ZKInputs struct {
 	//
 
 	// RqOffset relative transaction position to be linked. Used to perform
-	// atomic transactions. The format works like this:
-	// rqTxOffset   |	relativeIndex
-	// ----------------------------------------
-	// 0 			|	no linked transaction
-	// 1 			|	1
-	// 2 			|	2
-	// 3 			|	3
-	// 4 			|	-4
-	// 5 			|	-3
-	// 6 			|	-2
-	// 7 			|	-1
+	// atomic transactions.
 	RqOffset []*big.Int `json:"rqOffset"` // uint8 (max 3 bits), len: [maxTx]
 
 	// transaction L2 request data

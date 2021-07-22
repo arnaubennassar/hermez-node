@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/common"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 	"github.com/iden3/go-merkletree"

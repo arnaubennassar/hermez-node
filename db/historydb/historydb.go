@@ -26,9 +26,9 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/jmoiron/sqlx"
 

@@ -3,21 +3,17 @@ package api
 import (
 	"net/http"
 
+	"github.com/arnaubennassar/hermez-node/api/parsers"
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/api/parsers"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
 )
 
 func (a *API) getToken(c *gin.Context) {
 	// Get TokenID
 	tokenIDUint, err := parsers.ParseTokenFilter(c)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(err, c)
 		return
 	}
 	tokenID := common.TokenID(*tokenIDUint)
@@ -34,11 +30,7 @@ func (a *API) getTokens(c *gin.Context) {
 	// Account filters
 	filters, err := parsers.ParseTokensFilters(c)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(err, c)
 		return
 	}
 	// Fetch exits from historyDB

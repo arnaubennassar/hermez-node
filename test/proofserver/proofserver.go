@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/prover"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/prover"
 	"github.com/hermeznetwork/tracerr"
 )
 

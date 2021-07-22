@@ -10,21 +10,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/batchbuilder"
+	"github.com/arnaubennassar/hermez-node/common"
+	dbUtils "github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/db/l2db"
+	"github.com/arnaubennassar/hermez-node/db/statedb"
+	"github.com/arnaubennassar/hermez-node/eth"
+	"github.com/arnaubennassar/hermez-node/etherscan"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/prover"
+	"github.com/arnaubennassar/hermez-node/synchronizer"
+	"github.com/arnaubennassar/hermez-node/test"
+	"github.com/arnaubennassar/hermez-node/txprocessor"
+	"github.com/arnaubennassar/hermez-node/txselector"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/batchbuilder"
-	"github.com/hermeznetwork/hermez-node/common"
-	dbUtils "github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/db/l2db"
-	"github.com/hermeznetwork/hermez-node/db/statedb"
-	"github.com/hermeznetwork/hermez-node/eth"
-	"github.com/hermeznetwork/hermez-node/etherscan"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/prover"
-	"github.com/hermeznetwork/hermez-node/synchronizer"
-	"github.com/hermeznetwork/hermez-node/test"
-	"github.com/hermeznetwork/hermez-node/txprocessor"
-	"github.com/hermeznetwork/hermez-node/txselector"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 	"github.com/iden3/go-merkletree/db/pebble"
@@ -115,12 +115,12 @@ func newTestModules(t *testing.T) modules {
 	var bjj babyjub.PublicKeyComp
 	err = bjj.UnmarshalText([]byte("c433f7a696b7aa3a5224efb3993baf0ccd9e92eecee0c29a3f6c8208a9e81d9e"))
 	require.NoError(t, err)
-	coordAccount := txselector.CoordAccount{ // TODO TMP
+	coordAccount := &txselector.CoordAccount{ // TODO TMP
 		Addr:                ethCommon.HexToAddress("0xc58d29fA6e86E4FAe04DDcEd660d45BCf3Cb2370"),
 		BJJ:                 bjj,
 		AccountCreationAuth: nil,
 	}
-	txSelector, err := txselector.NewTxSelector(&coordAccount, txSelDBPath, syncStateDB, l2DB)
+	txSelector, err := txselector.NewTxSelector(coordAccount, txSelDBPath, syncStateDB, l2DB)
 	assert.NoError(t, err)
 
 	batchBuilderDBPath, err = ioutil.TempDir("", "tmpBatchBuilderDB")

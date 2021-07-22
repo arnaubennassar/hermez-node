@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
 	"github.com/dghubble/sling"
-	"github.com/hermeznetwork/hermez-node/common"
 	"github.com/hermeznetwork/tracerr"
 )
 

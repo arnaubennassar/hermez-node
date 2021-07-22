@@ -8,11 +8,11 @@ import (
 	"path"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/eth"
+	"github.com/arnaubennassar/hermez-node/prover"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/eth"
-	"github.com/hermeznetwork/hermez-node/prover"
 	"github.com/hermeznetwork/tracerr"
 )
 

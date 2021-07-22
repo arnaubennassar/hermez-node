@@ -1,9 +1,9 @@
 package parsers
 
 import (
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
 	"github.com/hermeznetwork/tracerr"
 	"gopkg.in/go-playground/validator.v9"
 )
@@ -21,12 +21,12 @@ func ParseExitFilter(c *gin.Context) (*uint, *common.Idx, error) {
 		return nil, nil, tracerr.Wrap(err)
 	}
 
-	queryAccount, err := common.StringToIdx(exitFilter.AccountIndex, "accountIndex")
+	idx, err := common.StringToIdx(exitFilter.AccountIndex, "accountIndex")
 	if err != nil {
 		return nil, nil, tracerr.Wrap(err)
 	}
 
-	return &exitFilter.BatchNum, queryAccount.AccountIndex, nil
+	return &exitFilter.BatchNum, idx, nil
 }
 
 // ExitsFilters struct for holding exits filters
@@ -85,7 +85,7 @@ func ParseExitsFilters(c *gin.Context, v *validator.Validate) (historydb.GetExit
 		return historydb.GetExitsAPIRequest{}, tracerr.Wrap(err)
 	}
 
-	queryAccount, err := common.StringToIdx(exitsFilters.AccountIndex, "accountIndex")
+	idx, err := common.StringToIdx(exitsFilters.AccountIndex, "accountIndex")
 	if err != nil {
 		return historydb.GetExitsAPIRequest{}, tracerr.Wrap(err)
 	}
@@ -94,7 +94,7 @@ func ParseExitsFilters(c *gin.Context, v *validator.Validate) (historydb.GetExit
 		EthAddr:              addr,
 		Bjj:                  bjj,
 		TokenID:              tokenID,
-		Idx:                  queryAccount.AccountIndex,
+		Idx:                  idx,
 		BatchNum:             exitsFilters.BatchNum,
 		OnlyPendingWithdraws: exitsFilters.OnlyPendingWithdraws,
 		FromItem:             exitsFilters.FromItem,

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/stretchr/testify/assert"
 )
 

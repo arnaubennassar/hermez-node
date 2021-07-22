@@ -6,6 +6,9 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	HEZ "github.com/arnaubennassar/hermez-node/eth/contracts/tokenHEZ"
+	"github.com/arnaubennassar/hermez-node/log"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -13,9 +16,6 @@ import (
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/hermeznetwork/hermez-node/common"
-	tokenhez "github.com/hermeznetwork/hermez-node/eth/contracts/tokenhez"
-	"github.com/hermeznetwork/hermez-node/log"
 	"github.com/hermeznetwork/tracerr"
 )
 
@@ -263,7 +263,7 @@ func (c *EthereumClient) EthBlockByNumber(ctx context.Context, number int64) (*c
 func (c *EthereumClient) EthERC20Consts(tokenAddress ethCommon.Address) (*ERC20Consts, error) {
 	// We use the HEZ token smart contract interfacehere because it's an
 	// ERC20, which allows us to access the standard ERC20 constants.
-	instance, err := tokenhez.NewTokenhez(tokenAddress, c.client)
+	instance, err := HEZ.NewHEZ(tokenAddress, c.client)
 	if err != nil {
 		return nil, tracerr.Wrap(err)
 	}
@@ -295,7 +295,7 @@ func (c *EthereumClient) Client() *ethclient.Client {
 
 // newCallOpts returns a CallOpts to be used in ethereum calls with a non-zero
 // From address.  This is a workaround for a bug in ethereumjs-vm that shows up
-// in ganache: https://github.com/hermeznetwork/hermez-node/issues/317
+// in ganache: https://github.com/arnaubennassar/hermez-node/issues/317
 func newCallOpts() *bind.CallOpts {
 	return &bind.CallOpts{
 		From: ethCommon.HexToAddress("0x0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f"),

@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	dbUtils "github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
+	"github.com/arnaubennassar/hermez-node/test"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/common"
-	dbUtils "github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
-	"github.com/hermeznetwork/hermez-node/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

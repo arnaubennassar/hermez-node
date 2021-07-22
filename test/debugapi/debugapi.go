@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db/statedb"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/synchronizer"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db/statedb"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/synchronizer"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

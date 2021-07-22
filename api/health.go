@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/health/checkers"
 	"github.com/dimiro1/health"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/hermeznetwork/hermez-node/health/checkers"
 )
 
 func (a *API) healthRoute(version string, ethClient *ethclient.Client, forgerAddress *ethCommon.Address) http.Handler {
@@ -23,10 +23,6 @@ func (a *API) healthRoute(version string, ethClient *ethclient.Client, forgerAdd
 	if a.h != nil {
 		historyDBChecker := checkers.NewCheckerWithDB(a.h.DB().DB)
 		healthHandler.AddChecker("historyDB", historyDBChecker)
-	}
-	if a.stateDB != nil {
-		stateDBChecker := checkers.NewStateDBChecker(a.stateDB)
-		healthHandler.AddChecker("stateDB", stateDBChecker)
 	}
 	healthHandler.AddInfo("version", version)
 	t := time.Now().UTC()

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/api/apitypes"
+	"github.com/arnaubennassar/hermez-node/api/parsers"
+	"github.com/arnaubennassar/hermez-node/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/api/apitypes"
-	"github.com/hermeznetwork/hermez-node/api/parsers"
-	"github.com/hermeznetwork/hermez-node/common"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 )
 
@@ -17,21 +17,13 @@ func (a *API) postAccountCreationAuth(c *gin.Context) {
 	// Parse body
 	var apiAuth receivedAuth
 	if err := c.ShouldBindJSON(&apiAuth); err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType}, c)
+		retBadReq(err, c)
 		return
 	}
 	// API to common + verify signature
 	commonAuth := accountCreationAuthAPIToCommon(&apiAuth)
-	isValid, err := commonAuth.VerifySignature(a.cg.ChainID, a.hermezAddress)
-	if !isValid && err != nil {
-		retBadReq(&apiError{
-			Err:  errors.New("invalid signature: " + err.Error()),
-			Code: ErrInvalidSignatureCode,
-			Type: ErrInvalidSignatureType,
-		}, c)
+	if !commonAuth.VerifySignature(a.cg.ChainID, a.hermezAddress) {
+		retBadReq(errors.New("invalid signature"), c)
 		return
 	}
 	// Insert to DB
@@ -52,11 +44,7 @@ func (a *API) getAccountCreationAuth(c *gin.Context) {
 	// Get hezEthereumAddress
 	addr, err := parsers.ParseGetAccountCreationAuthFilter(c)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(err, c)
 		return
 	}
 	// Fetch auth from l2DB

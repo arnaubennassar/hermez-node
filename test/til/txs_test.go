@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/arnaubennassar/hermez-node/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/hermeznetwork/hermez-node/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

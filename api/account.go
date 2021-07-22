@@ -4,36 +4,24 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/arnaubennassar/hermez-node/api/parsers"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/api/parsers"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
 )
 
 func (a *API) getAccount(c *gin.Context) {
 	// Get Addr
-	account, err := parsers.ParseAccountFilter(c)
+	idx, err := parsers.ParseAccountFilter(c)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(err, c)
 		return
 	}
-	apiAccount, err := a.h.GetAccountAPI(*account.AccountIndex)
+	apiAccount, err := a.h.GetAccountAPI(*idx)
 	if err != nil {
 		retSQLErr(err, c)
 		return
 	}
-	//Check if symbol is correct
-	if apiAccount.TokenSymbol != account.Symbol {
-		retBadReq(&apiError{
-			Err:  fmt.Errorf("invalid token symbol"),
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
-		return
-	}
+
 	c.JSON(http.StatusOK, apiAccount)
 }
 
@@ -41,22 +29,14 @@ func (a *API) getAccounts(c *gin.Context) {
 	for id := range c.Request.URL.Query() {
 		if id != "tokenIds" && id != "hezEthereumAddress" && id != "BJJ" &&
 			id != "fromItem" && id != "order" && id != "limit" {
-			retBadReq(&apiError{
-				Err:  fmt.Errorf("invalid Param: %s", id),
-				Code: ErrParamValidationFailedCode,
-				Type: ErrParamValidationFailedType,
-			}, c)
+			retBadReq(fmt.Errorf("invalid Param: %s", id), c)
 			return
 		}
 	}
 
 	accountsFilter, err := parsers.ParseAccountsFilters(c, a.validate)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(err, c)
 		return
 	}
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hermeznetwork/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

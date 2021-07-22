@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/log"
 	"github.com/gobuffalo/packr/v2"
-	"github.com/hermeznetwork/hermez-node/log"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/jmoiron/sqlx"
 

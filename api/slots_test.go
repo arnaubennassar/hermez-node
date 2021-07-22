@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/arnaubennassar/hermez-node/common"
+	"github.com/arnaubennassar/hermez-node/db"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/common"
-	"github.com/hermeznetwork/hermez-node/db"
 	"github.com/mitchellh/copystructure"
 	"github.com/stretchr/testify/assert"
 )

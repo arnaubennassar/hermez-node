@@ -18,15 +18,15 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/arnaubennassar/hermez-node/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/common"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/iden3/go-iden3-crypto/babyjub"
 )
 
 // BigIntStr is used to scan/value *big.Int directly into strings from/to sql DBs.
 // It assumes that *big.Int are inserted/fetched to/from the DB using the BigIntMeddler meddler
-// defined at github.com/hermeznetwork/hermez-node/db.  Since *big.Int is
+// defined at github.com/arnaubennassar/hermez-node/db.  Since *big.Int is
 // stored as DECIMAL in SQL, there's no need to implement Scan()/Value()
 // because DECIMALS are encoded/decoded as strings by the sql driver, and
 // BigIntStr is already a string.

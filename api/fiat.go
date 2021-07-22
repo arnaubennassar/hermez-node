@@ -1,22 +1,19 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/arnaubennassar/hermez-node/api/parsers"
+	"github.com/arnaubennassar/hermez-node/db/historydb"
 	"github.com/gin-gonic/gin"
-	"github.com/hermeznetwork/hermez-node/api/parsers"
-	"github.com/hermeznetwork/hermez-node/db/historydb"
 )
 
 func (a *API) getFiatCurrency(c *gin.Context) {
 	// Get symbol
 	symbol, err := parsers.ParseCurrencyFilter(c)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(errors.New(ErrInvalidSymbol), c)
 		return
 	}
 	// Fetch currency from historyDB
@@ -37,11 +34,7 @@ func (a *API) getFiatCurrencies(c *gin.Context) {
 	// Currency filters
 	symbols, err := parsers.ParseCurrenciesFilters(c)
 	if err != nil {
-		retBadReq(&apiError{
-			Err:  err,
-			Code: ErrParamValidationFailedCode,
-			Type: ErrParamValidationFailedType,
-		}, c)
+		retBadReq(err, c)
 		return
 	}
 

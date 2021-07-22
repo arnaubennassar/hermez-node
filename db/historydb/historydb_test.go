@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/arnaubennassar/hermez-node/api/apitypes"
+	"github.com/arnaubennassar/hermez-node/common"
+	dbUtils "github.com/arnaubennassar/hermez-node/db"
+	"github.com/arnaubennassar/hermez-node/log"
+	"github.com/arnaubennassar/hermez-node/test"
+	"github.com/arnaubennassar/hermez-node/test/til"
 	ethCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/hermeznetwork/hermez-node/api/apitypes"
-	"github.com/hermeznetwork/hermez-node/common"
-	dbUtils "github.com/hermeznetwork/hermez-node/db"
-	"github.com/hermeznetwork/hermez-node/log"
-	"github.com/hermeznetwork/hermez-node/test"
-	"github.com/hermeznetwork/hermez-node/test/til"
 	"github.com/hermeznetwork/tracerr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -385,6 +385,25 @@ func TestAccounts(t *testing.T) {
 	fetchedAccBalances, err := historyDB.GetAllAccountUpdates()
 	require.NoError(t, err)
 	assert.Equal(t, accUpdates, fetchedAccBalances)
+
+	// Test if can send to EthAddr for created accounts
+	var ok bool
+	for _, acc := range fetchedAccs {
+		// can send to created accounts
+		ok, err = historyDBWithACC.CanSendToEthAddr(acc.EthAddr, acc.TokenID)
+		require.NoError(t, err)
+		assert.True(t, ok)
+
+		// cannot send to wrong tokenID
+		ok, err = historyDBWithACC.CanSendToEthAddr(acc.EthAddr, 0)
+		require.NoError(t, err)
+		assert.False(t, ok)
+
+		// cannot send to wrong ethAddr
+		ok, err = historyDBWithACC.CanSendToEthAddr(ethCommon.HexToAddress("0xE39fEc6224708f0772D2A74fd3f9055A90E00000"), acc.TokenID)
+		require.NoError(t, err)
+		assert.False(t, ok)
+	}
 }
 
 func TestTxs(t *testing.T) {
